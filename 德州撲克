@@ -1,0 +1,97 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <random>
+
+using namespace std;
+
+class Licensing {
+private:
+    vector<string> cards;
+    vector<string> suits = { "Spades", "Hearts", "Diamonds", "Clubs" };
+    vector<string> values = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+
+public:
+    Licensing() {
+        for (const auto& suit : suits) {
+            for (const auto& value : values) {
+                cards.push_back(value + suit);
+            }
+        }
+    }
+
+    void shuffleCards() {
+        random_shuffle(cards.begin(), cards.end());
+    }
+
+    vector<vector<string>> dealCards(int numPlayers, int numDecks) {
+        shuffleCards();
+        vector<vector<string>> hands(numPlayers);
+
+        int cardsPerDeck = 52;
+        for (int i = 0; i < numDecks; ++i) {
+            for (int j = 0; j < numPlayers; ++j) {
+                int start = j * cardsPerDeck / numPlayers;
+                int end = (j + 1) * cardsPerDeck / numPlayers;
+                hands[j].insert(hands[j].end(), cards.begin() + start, cards.begin() + end);
+            }
+        }
+
+        return hands;
+    }
+};
+
+class CardType {
+public:
+    static bool checkStraightFlush(const vector<string>& hand) {
+        if (all_of(hand.begin(), hand.end(), [&](const string& card) { return card.back() == hand.front().back(); })) {
+            vector<int> values;
+            for (const auto& card : hand) {
+                values.push_back(find(values.begin(), values.end(), card.substr(0, card.size() - 1)) - values.begin());
+            }
+            sort(values.begin(), values.end());
+            return adjacent_find(values.begin(), values.end()) == values.end();
+        }
+        return false;
+    }
+
+    static bool checkFourOfAKind(const vector<string>& hand) {
+        vector<int> counts(13, 0);
+        for (const auto& card : hand) {
+            int index = find(values.begin(), values.end(), card.substr(0, card.size() - 1)) - values.begin();
+            counts[index]++;
+        }
+        return find(counts.begin(), counts.end(), 4) != counts.end();
+    }
+
+};
+
+int main() {
+    int numPlayers;
+    cout << "Enter number of players: ";
+    cin >> numPlayers;
+
+    int numDecks = (numPlayers * 5) / 52 + 1;
+    Licensing dealer;
+    auto hands = dealer.dealCards(numPlayers, numDecks);
+
+    for (int i = 0; i < numPlayers; ++i) {
+        cout << "Player " << i + 1 << "'s hand: ";
+        for (const auto& card : hands[i]) {
+            cout << card << " ";
+        }
+        cout << endl;
+    }
+
+    for (int i = 0; i < numPlayers; ++i) {
+        if (CardType::checkStraightFlush(hands[i])) {
+            cout << "Player " << i + 1 << " has a straight flush!" << endl;
+        }
+        else if (CardType::checkFourOfAKind(hands[i])) {
+            cout << "Player " << i + 1 << " has four of a kind!" << endl;
+        }
+
+    }
+
+    return 0;
+}
