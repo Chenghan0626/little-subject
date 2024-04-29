@@ -1,97 +1,198 @@
 #include <iostream>
-#include <vector>
-#include <string>
-#include <random>
+#include <cstdlib> 
+#include <ctime>
 
-using namespace std;
-
-class Licensing {
-private:
-    vector<string> cards;
-    vector<string> suits = { "Spades", "Hearts", "Diamonds", "Clubs" };
-    vector<string> values = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
-
-public:
-    Licensing() {
-        for (const auto& suit : suits) {
-            for (const auto& value : values) {
-                cards.push_back(value + suit);
-            }
-        }
-    }
-
-    void shuffleCards() {
-        random_shuffle(cards.begin(), cards.end());
-    }
-
-    vector<vector<string>> dealCards(int numPlayers, int numDecks) {
-        shuffleCards();
-        vector<vector<string>> hands(numPlayers);
-
-        int cardsPerDeck = 52;
-        for (int i = 0; i < numDecks; ++i) {
-            for (int j = 0; j < numPlayers; ++j) {
-                int start = j * cardsPerDeck / numPlayers;
-                int end = (j + 1) * cardsPerDeck / numPlayers;
-                hands[j].insert(hands[j].end(), cards.begin() + start, cards.begin() + end);
-            }
-        }
-
-        return hands;
-    }
+struct Card {
+    int value;
+    char suit;
 };
 
-class CardType {
+class Licensing {
 public:
-    static bool checkStraightFlush(const vector<string>& hand) {
-        if (all_of(hand.begin(), hand.end(), [&](const string& card) { return card.back() == hand.front().back(); })) {
-            vector<int> values;
-            for (const auto& card : hand) {
-                values.push_back(find(values.begin(), values.end(), card.substr(0, card.size() - 1)) - values.begin());
+    Licensing(int playerCount) : playerCount(playerCount) {
+        deckSize = 52;
+        deck = new Card[deckSize];
+        // 初始化牌組
+        for (int i = 0; i < deckSize; ++i) {
+            deck[i].value = i % 13 + 1;
+            deck[i].suit = "SHDC"[i / 13];
+        }
+    }
+
+    ~Licensing() {
+        delete[] deck;
+    }
+
+    void shuffle() {
+        for (int i = 0; i < deckSize; ++i) {
+            int j = std::rand() % deckSize;
+            std::swap(deck[i], deck[j]);
+        }
+    }
+
+    Card* deal() {
+        Card* hand = new Card[5];
+        for (int i = 0; i < 5; ++i) {
+            hand[i] = deck[i];
+        }
+        // 移除已發出的牌
+        for (int i = 0; i < deckSize - 5; ++i) {
+            deck[i] = deck[i + 5];
+        }
+        deckSize -= 5;
+        return hand;
+    }
+
+private:
+    int playerCount;
+    int deckSize;
+    Card* deck;
+};
+
+class CardTypeEvaluator {
+public:
+    static void sortHand(Card* hand) {
+        // 泡沫排序
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4 - i; ++j) {
+                if (hand[j].value > hand[j + 1].value) {
+                    std::swap(hand[j], hand[j + 1]);
+                }
             }
-            sort(values.begin(), values.end());
-            return adjacent_find(values.begin(), values.end()) == values.end();
+        }
+    }
+
+    static const char* evaluateHand(Card* hand) {
+        // 排序手牌
+        sortHand(hand);
+        // 進行牌型判斷
+        if (isRoyalFlush(hand)) return "Royal Flush";
+        if (isStraightFlush(hand)) return "Straight Flush";
+        if (isFourOfAKind(hand)) return "Four of a Kind";
+        if (isFullHouse(hand)) return "Full House";
+        if (isFlush(hand)) return "Flush";
+        if (isStraight(hand)) return "Straight";
+        if (isThreeOfAKind(hand)) return "Three of a Kind";
+        if (isTwoPair(hand)) return "Two Pair";
+        if (isPair(hand)) return "Pair";
+        return "High Card";
+    }
+
+private:
+    static bool isRoyalFlush(const Card* hand) {
+        // 判斷是否為皇家同花順
+        // 首先判斷是否同花順，然後判斷是否是10、J、Q、K、A
+        if (!isStraightFlush(hand)) return false;
+        return hand[0].value == 10 && hand[1].value == 11 && hand[2].value == 12 && hand[3].value == 13 && hand[4].value == 1;
+    }
+
+    static bool isStraightFlush(const Card* hand) {
+        // 判斷是否為同花順
+        if (!isFlush(hand)) return false; // 不是同花就不是同花順
+        return isStraight(hand);
+    }
+
+    static bool isFourOfAKind(const Card* hand) {
+        // 判斷是否為四條
+        // 如果有4張相同牌值的牌，即為四條
+        for (int i = 0; i <= 1; ++i) {
+            if (hand[i].value == hand[i + 1].value && hand[i].value == hand[i + 2].value && hand[i].value == hand[i + 3].value) {
+                return true;
+            }
         }
         return false;
     }
 
-    static bool checkFourOfAKind(const vector<string>& hand) {
-        vector<int> counts(13, 0);
-        for (const auto& card : hand) {
-            int index = find(values.begin(), values.end(), card.substr(0, card.size() - 1)) - values.begin();
-            counts[index]++;
+    static bool isFullHouse(const Card* hand) {
+        // 判斷是否為葫蘆
+        // 如果有三張相同牌值的牌，且另外兩張也相同，即為葫蘆
+        if ((hand[0].value == hand[1].value && hand[0].value == hand[2].value && hand[3].value == hand[4].value) ||
+            (hand[0].value == hand[1].value && hand[2].value == hand[3].value && hand[2].value == hand[4].value)) {
+            return true;
         }
-        return find(counts.begin(), counts.end(), 4) != counts.end();
+        return false;
     }
 
+    static bool isFlush(const Card* hand) {
+        // 判斷是否為同花
+        char suit = hand[0].suit;
+        for (int i = 1; i < 5; ++i) {
+            if (hand[i].suit != suit) return false;
+        }
+        return true;
+    }
+
+    static bool isStraight(const Card* hand) {
+        // 判斷是否為順子
+        // 如果5張牌的數值是連續的，即為順子
+        for (int i = 0; i < 4; ++i) {
+            if (hand[i].value + 1 != hand[i + 1].value) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static bool isThreeOfAKind(const Card* hand) {
+        // 判斷是否為三條
+        // 如果有3張相同牌值的牌，即為三條
+        for (int i = 0; i <= 2; ++i) {
+            if (hand[i].value == hand[i + 1].value && hand[i].value == hand[i + 2].value) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static bool isTwoPair(const Card* hand) {
+        // 判斷是否為兩對
+        // 如果有兩對相同牌值的牌，即為兩對
+        int pairs = 0;
+        for (int i = 0; i < 4; ++i) {
+            if (hand[i].value == hand[i + 1].value) {
+                ++pairs;
+                ++i; // Skip the next card
+            }
+        }
+        return pairs == 2;
+    }
+
+    static bool isPair(const Card* hand) {
+        // 判斷是否為對子
+        // 如果有2張相同牌值的牌，即為對子
+        for (int i = 0; i < 4; ++i) {
+            if (hand[i].value == hand[i + 1].value) {
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 int main() {
-    int numPlayers;
-    cout << "Enter number of players: ";
-    cin >> numPlayers;
+    int playerCount;
+    std::cout << "請輸入玩家數量: ";
+    std::cin >> playerCount;
 
-    int numDecks = (numPlayers * 5) / 52 + 1;
-    Licensing dealer;
-    auto hands = dealer.dealCards(numPlayers, numDecks);
+    
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-    for (int i = 0; i < numPlayers; ++i) {
-        cout << "Player " << i + 1 << "'s hand: ";
-        for (const auto& card : hands[i]) {
-            cout << card << " ";
+    Licensing licensing(playerCount);
+    licensing.shuffle();
+
+    for (int i = 0; i < playerCount; ++i) {
+        Card* hand = licensing.deal();
+        std::cout << "玩家 " << i + 1 << " 的手牌: ";
+        for (int j = 0; j < 5; ++j) {
+            std::cout << hand[j].value << hand[j].suit << " ";
         }
-        cout << endl;
-    }
+        std::cout << std::endl;
 
-    for (int i = 0; i < numPlayers; ++i) {
-        if (CardType::checkStraightFlush(hands[i])) {
-            cout << "Player " << i + 1 << " has a straight flush!" << endl;
-        }
-        else if (CardType::checkFourOfAKind(hands[i])) {
-            cout << "Player " << i + 1 << " has four of a kind!" << endl;
-        }
-
+        const char* type = CardTypeEvaluator::evaluateHand(hand);
+        std::cout << "牌型: " << type << std::endl;
+        delete[] hand;
     }
 
     return 0;
 }
+
