@@ -14,3 +14,9 @@
 ![image](https://github.com/Chenghan0626/little-subject/assets/164443684/1f93df32-77ac-4c2b-97cf-78b974b30851)
 
 開發進度
+有CardTypeEvaluator物件用來比較牌型
+有Licensing物件用來發牌
+
+![image](https://github.com/Chenghan0626/little-subject/assets/164443684/9d59f5b5-5ea7-46bc-b312-0f19fbcb5cca)
+
+![image](https://github.com/Chenghan0626/little-subject/assets/164443684/5b6c00d9-7f30-4b4c-84bb-b396930e0d22)
