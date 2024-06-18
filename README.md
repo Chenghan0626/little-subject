@@ -18,7 +18,8 @@
 
 情況二:玩家輸
 
-![image](https://github.com/Chenghan0626/little-subject/assets/164443684/14042449-0701-49d5-b691-567aedc0de51)
+![image](https://github.com/Chenghan0626/little-subject/assets/164443684/dd5de4f6-03d2-41c3-84d4-9da821f52bb4)
+
 
 情況三:玩家輸入籌碼超過玩家擁有的籌碼
 
