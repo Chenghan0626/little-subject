@@ -9,6 +9,7 @@ public:
     static void sortHand(Card* hand);
     static const char* evaluateHand(Card* hand);
     static int getHandRank(const char* type);
+    static int compareHands(Card* hand1, Card* hand2);
 private:
     static bool isRoyalFlush(const Card* hand);
     static bool isStraightFlush(const Card* hand);
