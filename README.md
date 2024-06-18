@@ -11,6 +11,13 @@
 遊戲人數可由玩家輸入設定為2~10人。
 由玩家先下注，下注完後每人發五張牌，電腦玩家隨機下注，所有玩家各自比較牌面，輸牌便損失注金，最終的贏家將獲得注池中所有的籌碼。
 
+UML圖
+
+![image](https://github.com/Chenghan0626/little-subject/assets/164443684/ee376113-73bc-40fd-bdb4-e84b6e5b9dc9)
+
+![image](https://github.com/Chenghan0626/little-subject/assets/164443684/d6f0c807-1b78-4942-bb25-40d62bc3fdfc)
+
+
 程式執行畫面截圖
 
 情況一:玩家贏
