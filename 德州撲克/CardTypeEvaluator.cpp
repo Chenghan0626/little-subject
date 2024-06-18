@@ -34,6 +34,67 @@ int CardTypeEvaluator::getHandRank(const char* type) {
     if (strcmp(type, "Pair") == 0) return 2;
     return 1;
 }
+int CardTypeEvaluator::compareHands(Card* hand1, Card* hand2) {
+    sortHand(hand1);
+    sortHand(hand2);
+
+    const char* type1 = evaluateHand(hand1);
+    const char* type2 = evaluateHand(hand2);
+
+    int rank1 = getHandRank(type1);
+    int rank2 = getHandRank(type2);
+
+    if (rank1 != rank2) {
+        return rank1 > rank2 ? 1 : -1;
+    }
+    switch (rank1) {
+    case 10: 
+    case 9:
+    case 5:
+        return hand1[4].value - hand2[4].value;
+
+    case 8:
+        return hand1[2].value - hand2[2].value; 
+    case 7: 
+        if (hand1[2].value != hand2[2].value)
+            return hand1[2].value - hand2[2].value;
+        return hand1[0].value - hand2[0].value;
+
+    case 6: 
+    case 1: 
+        for (int i = 4; i >= 0; --i) {
+            if (hand1[i].value != hand2[i].value)
+                return hand1[i].value - hand2[i].value;
+        }
+        return 0;
+
+    case 4: 
+        if (hand1[2].value != hand2[2].value)
+            return hand1[2].value - hand2[2].value;
+        if (hand1[4].value != hand2[4].value)
+            return hand1[4].value - hand2[4].value;
+        return hand1[3].value - hand2[3].value;
+
+    case 3: 
+        if (hand1[3].value != hand2[3].value)
+            return hand1[3].value - hand2[3].value;
+        if (hand1[1].value != hand2[1].value)
+            return hand1[1].value - hand2[1].value;
+        return hand1[4].value - hand2[4].value;
+
+    case 2: 
+        if (hand1[1].value != hand2[1].value)
+            return hand1[1].value - hand2[1].value;
+        if (hand1[4].value != hand2[4].value)
+            return hand1[4].value - hand2[4].value;
+        if (hand1[3].value != hand2[3].value)
+            return hand1[3].value - hand2[3].value;
+        return hand1[2].value - hand2[2].value;
+
+    default:
+        return 0;
+    }
+}
 bool CardTypeEvaluator::isRoyalFlush(const Card* hand) {
     if (!isStraightFlush(hand)) return false;
     return hand[0].value == 10 && hand[1].value == 11 && hand[2].value == 12 && hand[3].value == 13 && hand[4].value == 1;
