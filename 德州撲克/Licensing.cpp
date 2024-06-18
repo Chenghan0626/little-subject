@@ -9,18 +9,15 @@ Licensing::Licensing(int playerCount) : playerCount(playerCount) {
         deck[i].suit = "SHDC"[i / 13];
     }
 }
-
 Licensing::~Licensing() {
     delete[] deck;
 }
-
 void Licensing::shuffle() {
     for (int i = 0; i < deckSize; ++i) {
         int j = rand() % deckSize;
         std::swap(deck[i], deck[j]);
     }
 }
-
 Card* Licensing::deal() {
     Card* hand = new Card[5];
     for (int i = 0; i < 5; ++i) {
